@@ -26,8 +26,9 @@ namespace HospitalManagementAPI.Controllers
                     success = true,
                     message = "User Added Successfully",
                     users = _hospitalManagementContext._userModels.ToList()
-            });
-            }catch(Exception ex)
+                });
+            }
+            catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
                 return Ok(new
@@ -69,7 +70,7 @@ namespace HospitalManagementAPI.Controllers
                     userId = userId
                 });
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
                 return Ok(new
@@ -79,19 +80,19 @@ namespace HospitalManagementAPI.Controllers
                 });
             }
         }
-        
+
         [HttpPost("RegisterPatient")]
         public IActionResult RegisterPatient(CreatePatientModel createPatientModel)
         {
             try
             {
                 Guid userid = Guid.NewGuid();
-                if(!Guid.TryParse(createPatientModel.UserId , out userid))
+                if (!Guid.TryParse(createPatientModel.UserId, out userid))
                 {
                     throw new Exception("Invalid User Id ");
                 }
                 var user = _hospitalManagementContext._userModels.Where(x => x.Id == userid).FirstOrDefault();
-                if(user == null)
+                if (user == null)
                 {
                     throw new Exception("User Not Found");
                 }
@@ -178,7 +179,7 @@ namespace HospitalManagementAPI.Controllers
                     message = "Doctor Register Successfully"
                 });
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
                 return Ok(new
@@ -293,17 +294,17 @@ namespace HospitalManagementAPI.Controllers
                 });
             }
         }
-        
+
         [HttpGet("GetPatient")]
         public IActionResult GetPatient(string? name, string? nric, string? id)
         {
             try
             {
                 var list = (from rolemodel in _hospitalManagementContext._roleModels
-                            join patient in _hospitalManagementContext._patients on  rolemodel.RoleId equals patient.Id
-                            where 
+                            join patient in _hospitalManagementContext._patients on rolemodel.RoleId equals patient.Id
+                            where
                             (string.IsNullOrEmpty(name) ? true : (patient.FirstName.ToLower().Contains(name.ToLower()) || patient.LastName.ToLower().Contains(name.ToLower()))) &&
-                            (string.IsNullOrEmpty(nric) ? true : (patient.NRIC.Replace("-" , "").Contains(nric)) && 
+                            (string.IsNullOrEmpty(nric) ? true : (patient.NRIC.Replace("-", "").Contains(nric)) &&
                             (string.IsNullOrEmpty(id) ? true : (patient.Id.ToString() == id)))
                             select patient
                             ).ToList();
@@ -314,7 +315,7 @@ namespace HospitalManagementAPI.Controllers
                     message = string.Empty
                 });
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
                 return Ok(new
@@ -333,11 +334,11 @@ namespace HospitalManagementAPI.Controllers
             {
                 var list = (from rolemodel in _hospitalManagementContext._roleModels
                             join doctor in _hospitalManagementContext._doctors on rolemodel.RoleId equals doctor.Id
-                            where 
+                            where
                             (
                                 string.IsNullOrEmpty(name) ? true :
                                 (doctor.FirstName.ToLower().Contains(name.ToLower()) || doctor.LastName.ToLower().Contains(name.ToLower()))
-                            ) && 
+                            ) &&
                             (
                                 string.IsNullOrEmpty(id) ? true :
                                 doctor.Id.ToString() == id
@@ -348,7 +349,7 @@ namespace HospitalManagementAPI.Controllers
                 {
                     doctorList = list,
                     message = string.Empty,
-                    success = true 
+                    success = true
                 });
             }
             catch (Exception ex)
@@ -362,14 +363,14 @@ namespace HospitalManagementAPI.Controllers
                 });
             }
         }
-        
+
         [HttpPost("UpdatePatient")]
         public IActionResult UpdatePatient(UpdatePatientDetailModel new_patient)
         {
             try
             {
-                var patient = _hospitalManagementContext._patients.Where(x=> x.Id.ToString() == new_patient.Id).FirstOrDefault();
-                if(patient == null)
+                var patient = _hospitalManagementContext._patients.Where(x => x.Id.ToString() == new_patient.Id).FirstOrDefault();
+                if (patient == null)
                 {
                     throw new Exception("Update Failed, Record Not Found");
                 }
