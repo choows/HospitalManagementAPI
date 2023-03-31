@@ -20,5 +20,7 @@ namespace HospitalManagementAPI.Models.RequestModels
         public string ContactNum { get; set; }
         [Required]
         public string Tag { get; set; }
+        [Required]
+        public string Gender { get; set; }
     }
 }

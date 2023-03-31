@@ -1,6 +1,5 @@
 ﻿using HospitalManagementAPI.Models;
 using HospitalManagementAPI.Models.RequestModels;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HospitalManagementAPI.Controllers
@@ -36,11 +35,9 @@ namespace HospitalManagementAPI.Controllers
                                             where prescription.medicine.Contains(med)
                                             select med).ToList(),
                                          patient = patient
-
                                      }).ToList();
-                
-                
-                return Ok(new {
+                return Ok(new
+                {
                     success = true,
                     histories = prescriptions
                 });
@@ -85,7 +82,7 @@ namespace HospitalManagementAPI.Controllers
                 });
 
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
                 return Ok(new
@@ -95,7 +92,7 @@ namespace HospitalManagementAPI.Controllers
                 });
             }
         }
-        
+
         [HttpPost("NewMedicine")]
         public IActionResult NewMedicine(NewMedicineModel newMedicineModel)
         {
@@ -114,7 +111,7 @@ namespace HospitalManagementAPI.Controllers
                     message = "Success save Medicine"
                 });
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
                 return Ok(new
@@ -124,14 +121,14 @@ namespace HospitalManagementAPI.Controllers
                 });
             }
         }
-        
+
         [HttpPost("UpdateMedicine")]
         public IActionResult UpdateMedicine(UpdateMedicineModel updateMedicineModel)
         {
             try
             {
-                var med = _hospitalManagementContext._medicines.Where(x=> x.Id == updateMedicineModel.Id).FirstOrDefault();
-                if(med == null)
+                var med = _hospitalManagementContext._medicines.Where(x => x.Id == updateMedicineModel.Id).FirstOrDefault();
+                if (med == null)
                 {
                     throw new Exception("Medicone Not Found");
                 }

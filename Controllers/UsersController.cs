@@ -108,7 +108,8 @@ namespace HospitalManagementAPI.Controllers
                     LastName = createPatientModel.LastName,
                     lastUpdateDateTime = DateTime.Now,
                     Age = createPatientModel.Age,
-                    Id = _patientId
+                    Id = _patientId,
+                    Gender = createPatientModel.Gender
                 });
                 _hospitalManagementContext._roleModels.Add(new RoleModel()
                 {
@@ -387,6 +388,41 @@ namespace HospitalManagementAPI.Controllers
                 {
                     success = true,
                     message = "Patient Update Successfully"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return Ok(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
+
+        [HttpPost("UpdateDoctor")]
+        public IActionResult UpdateDoctor(UpdateDoctorProfile updateDoctorProfile)
+        {
+            try
+            {
+                var doctor = _hospitalManagementContext._doctors.Where(x => x.Id.ToString() == updateDoctorProfile.id).FirstOrDefault();
+                if (doctor == null)
+                {
+                    throw new Exception("Update Failed, Record Not Found");
+                }
+                doctor.Profession = updateDoctorProfile.profession;
+                doctor.ContactNum = updateDoctorProfile.contactNum;
+                doctor.FirstName = updateDoctorProfile.firstName;
+                doctor.LastName = updateDoctorProfile.lastName;
+                doctor.lastUpdateDateTime = DateTime.Now;
+                doctor.Email = updateDoctorProfile.email;
+                doctor.Introduction = updateDoctorProfile.introduction;
+                _hospitalManagementContext.SaveChanges();
+                return Ok(new
+                {
+                    success = true,
+                    message = "Doctor Update Successfully"
                 });
             }
             catch (Exception ex)
