@@ -145,11 +145,12 @@ namespace HospitalManagementAPI.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return Ok(new
-                {
-                    success = false,
-                    message = ex.Message
-                });
+                return Ok(
+                    new
+                    {
+                        success = false,
+                        message = ex.Message
+                    });
             }
         }
 
@@ -174,8 +175,6 @@ namespace HospitalManagementAPI.Controllers
                     message = ex.Message
                 });
             }
-
-
         }
     }
 }

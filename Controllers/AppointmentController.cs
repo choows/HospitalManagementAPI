@@ -1,6 +1,5 @@
 ﻿using HospitalManagementAPI.Models;
 using HospitalManagementAPI.Models.RequestModels;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HospitalManagementAPI.Controllers
@@ -22,19 +21,18 @@ namespace HospitalManagementAPI.Controllers
         {
             try
             {
-               // var appointmentList = _hospitalManagementContext._appointments.ToList();
                 var appointmentList = (from appointment in _hospitalManagementContext._appointments
-                         join doctor in _hospitalManagementContext._doctors on appointment.DoctorId equals doctor.Id
-                         join patient in _hospitalManagementContext._patients on appointment.PatientId equals patient.Id
-                         where ( 
-                         (string.IsNullOrEmpty(getAppointmentListModel.PatientId) ? true : patient.Id.ToString() == getAppointmentListModel.PatientId) && 
-                         (string.IsNullOrEmpty(getAppointmentListModel.DoctorId) ? true : doctor.Id.ToString() == getAppointmentListModel.DoctorId) && 
-                         (string.IsNullOrEmpty(getAppointmentListModel.PatientName) ? true : (
-                            patient.FirstName.ToLower().Contains(getAppointmentListModel.PatientName.ToLower()) || patient.LastName.ToLower().Contains(getAppointmentListModel.PatientName.ToLower()))) &&
-                         (string.IsNullOrEmpty(getAppointmentListModel.DoctorName) ? true : (
-                            doctor.FirstName.ToLower().Contains(getAppointmentListModel.DoctorName.ToLower()) || doctor.LastName.ToLower().Contains(getAppointmentListModel.DoctorName.ToLower()))) 
+                                       join doctor in _hospitalManagementContext._doctors on appointment.DoctorId equals doctor.Id
+                                       join patient in _hospitalManagementContext._patients on appointment.PatientId equals patient.Id
+                                       where (
+                                       (string.IsNullOrEmpty(getAppointmentListModel.PatientId) ? true : patient.Id.ToString() == getAppointmentListModel.PatientId) &&
+                                       (string.IsNullOrEmpty(getAppointmentListModel.DoctorId) ? true : doctor.Id.ToString() == getAppointmentListModel.DoctorId) &&
+                                       (string.IsNullOrEmpty(getAppointmentListModel.PatientName) ? true : (
+                                          patient.FirstName.ToLower().Contains(getAppointmentListModel.PatientName.ToLower()) || patient.LastName.ToLower().Contains(getAppointmentListModel.PatientName.ToLower()))) &&
+                                       (string.IsNullOrEmpty(getAppointmentListModel.DoctorName) ? true : (
+                                          doctor.FirstName.ToLower().Contains(getAppointmentListModel.DoctorName.ToLower()) || doctor.LastName.ToLower().Contains(getAppointmentListModel.DoctorName.ToLower())))
 
-                         )
+                                       )
                                        orderby appointment.AppointmentDateTime descending
                                        select new
                                        {
@@ -46,15 +44,35 @@ namespace HospitalManagementAPI.Controllers
                                            status = AppointmentStatus.GetStatus(appointment.status),
                                            Remark = appointment.Remark
                                        }).ToList();
-               
+                var nonPatientAppointment = (from appointment in _hospitalManagementContext._nonPatientAppointments
+                                             join doctor in _hospitalManagementContext._doctors on appointment.DoctorId equals doctor.Id
+                                             where (string.IsNullOrEmpty(getAppointmentListModel.PatientName) ? true : (
+                                                appointment.PatientFirstName.ToLower().Contains(getAppointmentListModel.PatientName.ToLower()) || appointment.PatientLastName.ToLower().Contains(getAppointmentListModel.PatientName.ToLower())))
+                                             select new
+                                             {
+                                                 AppointmentDateTime = appointment.AppointmentDateTime,
+                                                 Id = appointment.Id,
+                                                 patient = new Patient()
+                                                 {
+                                                     ContactNum = appointment.PatientContact,
+                                                     FirstName = appointment.PatientFirstName,
+                                                     LastName = appointment.PatientLastName,
+                                                     NRIC = appointment.PatientNric
+                                                 },
+                                                 doctor = doctor,
+                                                 CreateDateTime = appointment.CreateDateTime,
+                                                 status = AppointmentStatus.GetStatus(appointment.status),
+                                                 Remark = appointment.Remark
+                                             });
+
                 return Ok(new
                 {
-                    appointmentList = appointmentList,
+                    appointmentList = appointmentList.Concat(nonPatientAppointment),
                     success = true,
                     message = "Success"
                 });
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
                 return Ok(new
@@ -64,13 +82,63 @@ namespace HospitalManagementAPI.Controllers
                 });
             }
         }
-        
+
+        [HttpPost("NewNonPatientAppointment")]
+        public IActionResult NewNonPatientAppointment(NonPatientAppointmentModel nonPatientAppointmentModel)
+        {
+            try
+            {
+                if (!Guid.TryParse(nonPatientAppointmentModel.DoctorId, out var doctorId))
+                {
+                    throw new Exception("Doctor Invalid");
+                }
+                else
+                {
+                    var doctor = _hospitalManagementContext._doctors.
+                        Where(x => x.Id.ToString() == nonPatientAppointmentModel.DoctorId).FirstOrDefault();
+                    if (doctor == null)
+                    {
+                        throw new Exception("Doctor Invalid");
+                    }
+                }
+
+                _hospitalManagementContext._nonPatientAppointments.Add(new NonPatientAppointment()
+                {
+                    AppointmentDateTime = nonPatientAppointmentModel.AppointmentDateTime,
+                    CreateDateTime = DateTime.Now,
+                    Id = Guid.NewGuid(),
+                    Remark = nonPatientAppointmentModel.Remark,
+                    status = (int)AppointmentStatusEnum.Booked,
+                    DoctorId = Guid.Parse(nonPatientAppointmentModel.DoctorId),
+                    PatientContact = nonPatientAppointmentModel.Contact,
+                    PatientFirstName = nonPatientAppointmentModel.FirstName,
+                    PatientLastName = nonPatientAppointmentModel.LastName,
+                    PatientNric = nonPatientAppointmentModel.Nric
+                });
+
+                _hospitalManagementContext.SaveChanges();
+                return Ok(new
+                {
+                    success = true,
+                    message = "appointment Made."
+                });
+            }
+            catch (Exception exp)
+            {
+                _logger.LogError(exp.Message);
+                return Ok(new
+                {
+                    success = false,
+                    message = exp.Message
+                });
+            }
+        }
         [HttpPost("NewAppointment")]
         public IActionResult NewAppointment(NewAppointmentModel newAppointmentModel)
         {
             try
             {
-                if(!Guid.TryParse(newAppointmentModel.DoctorId , out var doctorId))
+                if (!Guid.TryParse(newAppointmentModel.DoctorId, out var doctorId))
                 {
                     throw new Exception("Doctor Invalid");
                 }
@@ -78,7 +146,7 @@ namespace HospitalManagementAPI.Controllers
                 {
                     var doctor = _hospitalManagementContext._doctors.
                         Where(x => x.Id.ToString() == newAppointmentModel.DoctorId).FirstOrDefault();
-                    if(doctor == null)
+                    if (doctor == null)
                     {
                         throw new Exception("Doctor Invalid");
                     }
@@ -113,10 +181,10 @@ namespace HospitalManagementAPI.Controllers
                 return Ok(new
                 {
                     success = true,
-                    message = "appintment Made."
+                    message = "appointment Made."
                 });
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
                 return Ok(new
@@ -126,20 +194,20 @@ namespace HospitalManagementAPI.Controllers
                 });
             }
         }
-        
+
         [HttpPost("UpdateAppointment")]
         public IActionResult UpdateAppointment(UpdateAppoinmentModel updateAppoinmentModel)
         {
             try
             {
                 var appointment = _hospitalManagementContext._appointments.
-                    Where(x=> x.Id.ToString() == updateAppoinmentModel.AppointId).FirstOrDefault(); 
-          
-                if(appointment == null)
+                    Where(x => x.Id.ToString() == updateAppoinmentModel.AppointId).FirstOrDefault();
+
+                if (appointment == null)
                 {
                     throw new Exception("Appointment Not found");
                 }
-                if(updateAppoinmentModel.AppointmentDateTime.HasValue)
+                if (updateAppoinmentModel.AppointmentDateTime.HasValue)
                 {
                     if (updateAppoinmentModel.AppointmentDateTime.Value < DateTime.Now && updateAppoinmentModel.AppointmentDateTime.Value != appointment.AppointmentDateTime)
                         throw new Exception("Invalid Appointment Datetime");
@@ -171,7 +239,7 @@ namespace HospitalManagementAPI.Controllers
                         case "cancelled":
                             {
                                 appointment.status = (int)AppointmentStatusEnum.Cancelled;
-                                break;  
+                                break;
                             }
                         default: break;
                     }
@@ -183,7 +251,8 @@ namespace HospitalManagementAPI.Controllers
                     message = "Done Update Appointment"
                 });
 
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
                 return Ok(new

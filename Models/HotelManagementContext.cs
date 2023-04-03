@@ -25,6 +25,7 @@ namespace HospitalManagementAPI.Models
         public DbSet<Prescription> _prescriptions { get; set; } = null!;
         public DbSet<RoleModel> _roleModels { get; set; } = null!;
         public DbSet<UserModal> _userModels { get; set; } = null!;
+        public DbSet<NonPatientAppointment> _nonPatientAppointments { get; set; } = null!;
         public HospitalManagementContext(DbContextOptions<HospitalManagementContext> options) : base(options)
         {
         }
