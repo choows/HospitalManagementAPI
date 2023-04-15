@@ -14,5 +14,11 @@
         public string MedicalHistory { get; set; } //new 
         public DateTime createDateTime { get; set; }
         public DateTime lastUpdateDateTime { get; set; }
+
+
+        //Emergency contact 
+        public string EmergencyContactName { get; set; }
+        public string EmergencyContactNum { get; set; }
+        public string EmergencyContactRelation { get; set; }
     }
 }

@@ -110,7 +110,10 @@ namespace HospitalManagementAPI.Controllers
                     Age = createPatientModel.Age,
                     Id = _patientId,
                     Gender = createPatientModel.Gender,
-                    MedicalHistory = ""
+                    MedicalHistory = "",
+                    EmergencyContactName = createPatientModel.EmergencyContactName,
+                    EmergencyContactNum = createPatientModel.EmergencyContactNum,
+                    EmergencyContactRelation = createPatientModel.EmergencyContactRelation
                 });
                 _hospitalManagementContext._roleModels.Add(new RoleModel()
                 {
@@ -388,6 +391,9 @@ namespace HospitalManagementAPI.Controllers
                 patient.FirstName = new_patient.FirstName;
                 patient.LastName = new_patient.LastName;
                 patient.NRIC = new_patient.NRIC;
+                patient.EmergencyContactName = new_patient.EmergencyContactName;
+                patient.EmergencyContactNum = new_patient.EmergencyContactNum;
+                patient.EmergencyContactRelation = new_patient.EmergencyContactRelation;
                 _hospitalManagementContext.SaveChanges();
                 return Ok(new
                 {

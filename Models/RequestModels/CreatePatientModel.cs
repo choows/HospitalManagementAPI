@@ -22,5 +22,11 @@ namespace HospitalManagementAPI.Models.RequestModels
         public string Tag { get; set; }
         [Required]
         public string Gender { get; set; }
+        [Required]
+        public string EmergencyContactNum { get; set; }
+        [Required]
+        public string EmergencyContactName { get; set; }
+        [Required]
+        public string EmergencyContactRelation { get; set; }
     }
 }

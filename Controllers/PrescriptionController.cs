@@ -60,7 +60,7 @@ namespace HospitalManagementAPI.Controllers
             try
             {
                 var prescription = _hospitalManagementContext._prescriptions.Where(x => x.Id == model.PrescriptionId).FirstOrDefault();
-                if(prescription == null)
+                if (prescription == null)
                 {
                     throw new Exception("Prescription Not Found");
 
@@ -73,7 +73,7 @@ namespace HospitalManagementAPI.Controllers
                     message = "Done Update"
                 });
             }
-            catch(Exception exp)
+            catch (Exception exp)
             {
                 _logger.LogError(exp.Message);
                 return Ok(new
