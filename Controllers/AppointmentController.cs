@@ -173,7 +173,7 @@ namespace HospitalManagementAPI.Controllers
                     && x.AppointmentDateTime.Hour == newAppointmentModel.AppointmentDateTime.Hour
                     && x.status == (int)AppointmentStatusEnum.Booked
                 ).FirstOrDefault();
-                if(extapp != null)
+                if (extapp != null)
                 {
                     throw new Exception("Time lot booked by other appointments.");
                 }
