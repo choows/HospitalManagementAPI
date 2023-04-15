@@ -44,30 +44,30 @@ namespace HospitalManagementAPI.Controllers
                                            status = AppointmentStatus.GetStatus(appointment.status),
                                            Remark = appointment.Remark
                                        }).ToList();
-                var nonPatientAppointment = (from appointment in _hospitalManagementContext._nonPatientAppointments
-                                             join doctor in _hospitalManagementContext._doctors on appointment.DoctorId equals doctor.Id
-                                             where (string.IsNullOrEmpty(getAppointmentListModel.PatientName) ? true : (
-                                                appointment.PatientFirstName.ToLower().Contains(getAppointmentListModel.PatientName.ToLower()) || appointment.PatientLastName.ToLower().Contains(getAppointmentListModel.PatientName.ToLower())))
-                                             select new
-                                             {
-                                                 AppointmentDateTime = appointment.AppointmentDateTime,
-                                                 Id = appointment.Id,
-                                                 patient = new Patient()
-                                                 {
-                                                     ContactNum = appointment.PatientContact,
-                                                     FirstName = appointment.PatientFirstName,
-                                                     LastName = appointment.PatientLastName,
-                                                     NRIC = appointment.PatientNric
-                                                 },
-                                                 doctor = doctor,
-                                                 CreateDateTime = appointment.CreateDateTime,
-                                                 status = AppointmentStatus.GetStatus(appointment.status),
-                                                 Remark = appointment.Remark
-                                             });
+                //var nonPatientAppointment = (from appointment in _hospitalManagementContext._nonPatientAppointments
+                //                             join doctor in _hospitalManagementContext._doctors on appointment.DoctorId equals doctor.Id
+                //                             where (string.IsNullOrEmpty(getAppointmentListModel.PatientName) ? true : (
+                //                                appointment.PatientFirstName.ToLower().Contains(getAppointmentListModel.PatientName.ToLower()) || appointment.PatientLastName.ToLower().Contains(getAppointmentListModel.PatientName.ToLower())))
+                //                             select new
+                //                             {
+                //                                 AppointmentDateTime = appointment.AppointmentDateTime,
+                //                                 Id = appointment.Id,
+                //                                 patient = new Patient()
+                //                                 {
+                //                                     ContactNum = appointment.PatientContact,
+                //                                     FirstName = appointment.PatientFirstName,
+                //                                     LastName = appointment.PatientLastName,
+                //                                     NRIC = appointment.PatientNric
+                //                                 },
+                //                                 doctor = doctor,
+                //                                 CreateDateTime = appointment.CreateDateTime,
+                //                                 status = AppointmentStatus.GetStatus(appointment.status),
+                //                                 Remark = appointment.Remark
+                //                             });
 
                 return Ok(new
                 {
-                    appointmentList = appointmentList.Concat(nonPatientAppointment),
+                    appointmentList = appointmentList, //.Concat(nonPatientAppointment),
                     success = true,
                     message = "Success"
                 });
@@ -163,6 +163,19 @@ namespace HospitalManagementAPI.Controllers
                     {
                         throw new Exception("Patient Invalid");
                     }
+                }
+
+                var extapp = _hospitalManagementContext._appointments.Where(
+                    x => x.DoctorId == doctorId
+                    && x.AppointmentDateTime.Year == newAppointmentModel.AppointmentDateTime.Year
+                    && x.AppointmentDateTime.Month == newAppointmentModel.AppointmentDateTime.Month
+                    && x.AppointmentDateTime.Day == newAppointmentModel.AppointmentDateTime.Day
+                    && x.AppointmentDateTime.Hour == newAppointmentModel.AppointmentDateTime.Hour
+                    && x.status == (int)AppointmentStatusEnum.Booked
+                ).FirstOrDefault();
+                if(extapp != null)
+                {
+                    throw new Exception("Time lot booked by other appointments.");
                 }
 
                 _hospitalManagementContext._appointments.Add(new Appointment()

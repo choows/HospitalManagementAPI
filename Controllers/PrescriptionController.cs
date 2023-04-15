@@ -25,6 +25,7 @@ namespace HospitalManagementAPI.Controllers
                 var prescriptions = (from appointment in _hospitalManagementContext._appointments
                                      join patient in _hospitalManagementContext._patients on appointment.PatientId equals patient.Id
                                      join prescription in _hospitalManagementContext._prescriptions on appointment equals prescription.Appointment
+                                     where !prescription.isCollected
                                      select new
                                      {
                                          id = prescription.Id,
@@ -52,6 +53,37 @@ namespace HospitalManagementAPI.Controllers
                 });
             }
         }
+
+        [HttpPost("PrescriptionIsCollected")]
+        public IActionResult PrescriotionIsCollected(UpdatePrescriptionModel model)
+        {
+            try
+            {
+                var prescription = _hospitalManagementContext._prescriptions.Where(x => x.Id == model.PrescriptionId).FirstOrDefault();
+                if(prescription == null)
+                {
+                    throw new Exception("Prescription Not Found");
+
+                }
+                prescription.isCollected = true;
+                _hospitalManagementContext.SaveChanges();
+                return Ok(new
+                {
+                    success = true,
+                    message = "Done Update"
+                });
+            }
+            catch(Exception exp)
+            {
+                _logger.LogError(exp.Message);
+                return Ok(new
+                {
+                    success = false,
+                    message = exp.Message
+                });
+            }
+        }
+
         [HttpPost("AddNewPrescription")]
         public IActionResult AddNewPrescription(NewHistoryModel newHistoryModel)
         {
@@ -71,6 +103,7 @@ namespace HospitalManagementAPI.Controllers
                 _hospitalManagementContext._prescriptions.Add(new Prescription()
                 {
                     Appointment = appointment,
+                    isCollected = false,
                     Description = newHistoryModel.Description,
                     medicine = medicineList
                 });

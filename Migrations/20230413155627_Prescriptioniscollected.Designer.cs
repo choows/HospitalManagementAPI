@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HospitalManagementAPI.Migrations
 {
     [DbContext(typeof(HospitalManagementContext))]
-    [Migration("20230404151919_NewTableMigration")]
-    partial class NewTableMigration
+    [Migration("20230413155627_Prescriptioniscollected")]
+    partial class Prescriptioniscollected
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -332,6 +332,9 @@ namespace HospitalManagementAPI.Migrations
 
                     b.Property<Guid?>("PatientHistoryId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("isCollected")
+                        .HasColumnType("bit");
 
                     b.HasKey("Id");
 

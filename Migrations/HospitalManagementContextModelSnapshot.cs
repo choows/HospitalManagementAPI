@@ -330,6 +330,9 @@ namespace HospitalManagementAPI.Migrations
                     b.Property<Guid?>("PatientHistoryId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<bool>("isCollected")
+                        .HasColumnType("bit");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AppointmentId");

@@ -109,7 +109,8 @@ namespace HospitalManagementAPI.Controllers
                     lastUpdateDateTime = DateTime.Now,
                     Age = createPatientModel.Age,
                     Id = _patientId,
-                    Gender = createPatientModel.Gender
+                    Gender = createPatientModel.Gender,
+                    MedicalHistory = ""
                 });
                 _hospitalManagementContext._roleModels.Add(new RoleModel()
                 {
@@ -309,6 +310,10 @@ namespace HospitalManagementAPI.Controllers
                             (string.IsNullOrEmpty(id) ? true : (patient.Id.ToString() == id)))
                             select patient
                             ).ToList();
+                if (!string.IsNullOrEmpty(id))
+                {
+                    list = list.Where(x => x.Id.ToString() == id).ToList();
+                }
                 return Ok(new
                 {
                     success = true,
