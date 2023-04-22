@@ -32,7 +32,8 @@ namespace HospitalManagementAPI.Controllers
                                        (string.IsNullOrEmpty(getAppointmentListModel.DoctorName) ? true : (
                                           doctor.FirstName.ToLower().Contains(getAppointmentListModel.DoctorName.ToLower()) || doctor.LastName.ToLower().Contains(getAppointmentListModel.DoctorName.ToLower())))
 
-                                       )
+                                       && appointment.status == (int)AppointmentStatusEnum.Booked
+                                          )
                                        orderby appointment.AppointmentDateTime descending
                                        select new
                                        {
@@ -164,7 +165,10 @@ namespace HospitalManagementAPI.Controllers
                         throw new Exception("Patient Invalid");
                     }
                 }
-
+                if (newAppointmentModel.AppointmentDateTime.Hour < 9 || newAppointmentModel.AppointmentDateTime.Hour > 17 || newAppointmentModel.AppointmentDateTime < DateTime.Now)
+                {
+                    throw new Exception("Out of business hours.");
+                }
                 var extapp = _hospitalManagementContext._appointments.Where(
                     x => x.DoctorId == doctorId
                     && x.AppointmentDateTime.Year == newAppointmentModel.AppointmentDateTime.Year
@@ -176,6 +180,14 @@ namespace HospitalManagementAPI.Controllers
                 if (extapp != null)
                 {
                     throw new Exception("Time lot booked by other appointments.");
+                }
+                if (extapp == null)
+                {
+                    extapp = _hospitalManagementContext._appointments.Where(x => x.PatientId.ToString() == newAppointmentModel.PatientId && x.status == (int)AppointmentStatusEnum.Booked).FirstOrDefault();
+                }
+                if (extapp != null)
+                {
+                    throw new Exception("Patient couldn't make multiple appointments");
                 }
 
                 _hospitalManagementContext._appointments.Add(new Appointment()
