@@ -205,7 +205,8 @@ namespace HospitalManagementAPI.Controllers
                 return Ok(new
                 {
                     success = false,
-                    message = ex.Message
+                    message = ex.Message,
+                    list = new List<Medicine>()
                 });
             }
         }
