@@ -13,4 +13,14 @@ namespace HospitalManagementAPI.Models.RequestModels
         public string AppointmentId { get; set; }
         public List<int> newPrescriptionModels { get; set; }
     }
+
+    public class NewNonPatientHistoryModel
+    {
+        [Required]
+        public string DoctorId { get; set; }
+        public string Description { get; set; }
+        [Required]
+        public string AppointmentId { get; set; }
+        public List<int> newPrescriptionModels { get; set; }
+    }
 }

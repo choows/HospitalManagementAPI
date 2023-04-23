@@ -54,6 +54,40 @@ namespace HospitalManagementAPI.Controllers
             }
         }
 
+        [HttpPost("GetPrescriptionsByAppointment")]
+        public IActionResult GetPrescriptionsByAppointment(GetPrescriptionByApp model)
+        {
+            try
+            {
+                var prescriptions = (from appointment in _hospitalManagementContext._appointments
+                                     join prescription in _hospitalManagementContext._prescriptions on appointment equals prescription.Appointment
+                                     where appointment.Id.ToString() == model.AppointmentId
+                                     select new
+                                     {
+                                         id = prescription.Id,
+                                         description = prescription.Description,
+                                         isCollected = prescription.isCollected,
+                                         medicine = (from med in _hospitalManagementContext._medicines
+                                                     where prescription.medicine.Contains(med)
+                                                     select med).ToList()
+                                     }).ToList();
+                return Ok(new
+                {
+                    success = true,
+                    details = prescriptions
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return Ok(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
+
         [HttpPost("PrescriptionIsCollected")]
         public IActionResult PrescriotionIsCollected(UpdatePrescriptionModel model)
         {
@@ -113,7 +147,47 @@ namespace HospitalManagementAPI.Controllers
                     success = true,
                     message = "New Prescription Added"
                 });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return Ok(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
 
+        [HttpPost("AddNewNonPatientPrescription")]
+        public IActionResult AddNewPrescription(NewNonPatientHistoryModel newHistoryModel)
+        {
+            try
+            {
+                var appointment = _hospitalManagementContext._appointments.Where(x => x.Id.ToString() == newHistoryModel.AppointmentId).FirstOrDefault();
+                if (appointment == null)
+                    throw new Exception("Appointment Not Found");
+
+                var medicineList = new List<Medicine>();
+                newHistoryModel.newPrescriptionModels.ForEach(pres =>
+                {
+                    var med = _hospitalManagementContext._medicines.Where(x => x.Id == pres).FirstOrDefault();
+                    if (med != null)
+                        medicineList.Add(med);
+                });
+                _hospitalManagementContext._prescriptions.Add(new Prescription()
+                {
+                    Appointment = appointment,
+                    isCollected = false,
+                    Description = newHistoryModel.Description,
+                    medicine = medicineList
+                });
+                _hospitalManagementContext.SaveChanges();
+                return Ok(new
+                {
+                    success = true,
+                    message = "New Prescription Added"
+                });
             }
             catch (Exception ex)
             {
